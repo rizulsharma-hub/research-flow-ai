@@ -129,7 +129,7 @@ export default function ArticlePage({ params }: PageProps) {
             )}
           </div>
 
-          <PipelineTimeline />
+          <PipelineTimeline onRetry={() => retry(id)} />
           <LiveLogViewer />
         </div>
 

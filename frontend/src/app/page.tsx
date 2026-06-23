@@ -20,7 +20,7 @@ const PIPELINE_STEPS = [
 const FEATURES = [
   {
     icon: Brain,
-    title: 'Powered by Claude',
+    title: 'Powered by NVIDIA',
     desc: 'Each stage uses Claude with specialized prompts crafted by expert SEO researchers and editors.',
   },
   {
@@ -109,7 +109,7 @@ export default function LandingPage() {
         <div className="relative max-w-4xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm mb-8">
             <Sparkles className="w-3.5 h-3.5" />
-            Powered by Claude · 9-Stage AI Pipeline
+            Powered by NVIDIA · 9-Stage AI Pipeline
           </div>
 
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-[1.05] text-balance">

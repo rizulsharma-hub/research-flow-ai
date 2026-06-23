@@ -234,8 +234,8 @@ Topic: ${data.topic}
 Primary Keyword: ${data.primaryKeyword}
 Target Audience: ${data.targetAudience}
 Unique Content Angle: ${keywordAnalysis.contentAngle}
-Key Gaps to Address: ${competitorResearch.contentGaps.join('; ')}
-Missing Topics to Cover: ${competitorResearch.missingTopics.join('; ')}
+Key Gaps to Address: ${(competitorResearch.contentGaps ?? []).join('; ')}
+Missing Topics to Cover: ${(competitorResearch.missingTopics ?? []).join('; ')}
 
 Return ONLY a JSON object:
 {
@@ -302,8 +302,8 @@ Search Intent: ${keywordAnalysis.searchIntent}
 Content Angle: ${keywordAnalysis.contentAngle}
 Target Word Count: ${data.wordCount} words
 Target Audience: ${data.targetAudience}
-Key Takeaways to Incorporate: ${researchReport.keyTakeaways.join('; ')}
-Content Gaps to Address: ${competitorResearch.contentGaps.join('; ')}
+Key Takeaways to Incorporate: ${(researchReport.keyTakeaways ?? []).join('; ')}
+Content Gaps to Address: ${(competitorResearch.contentGaps ?? []).join('; ')}
 
 Return ONLY a JSON object:
 {
@@ -358,7 +358,7 @@ CONTENT ANGLE: ${keywordAnalysis.contentAngle}
 OUTLINE:
 H1: ${outline.h1}
 Introduction: ${outline.introduction}
-${outline.sections.map((s, i) => `## ${i + 1}: ${s.h2}\nCover: ${s.points.join(' | ')}${s.subsections?.map(sub => `\n  ### ${sub.h3}: ${sub.points.join(' | ')}`).join('') ?? ''}`).join('\n\n')}
+${(outline.sections ?? []).map((s, i) => `## ${i + 1}: ${s.h2}\nCover: ${(s.points ?? []).join(' | ')}${s.subsections?.map(sub => `\n  ### ${sub.h3}: ${(sub.points ?? []).join(' | ')}`).join('') ?? ''}`).join('\n\n')}
 Conclusion: ${outline.conclusion}
 
 KEY RESEARCH TO WEAVE IN:
@@ -445,7 +445,7 @@ PRIMARY KEYWORD: "${data.primaryKeyword}"
 SECONDARY KEYWORDS: ${data.secondaryKeywords.join(', ') || 'none'}
 TARGET AUDIENCE: ${data.targetAudience}
 ARTICLE OPENING: ${article.slice(0, 500)}
-RELATED QUESTIONS: ${competitorResearch.frequentlyAskedQuestions.slice(0, 6).join(' | ')}
+RELATED QUESTIONS: ${(competitorResearch.frequentlyAskedQuestions ?? []).slice(0, 6).join(' | ')}
 
 Return ONLY a JSON object:
 {
@@ -549,13 +549,13 @@ Format output as clean markdown. Do NOT wrap in code fences.`;
   const prompt = `Assemble the final publication-ready article.
 
 QUALITY SUGGESTIONS TO APPLY:
-${qualityReport.feedback.suggestions.map((s, i) => `${i + 1}. ${s}`).join('\n')}
+${(qualityReport.feedback?.suggestions ?? []).map((s, i) => `${i + 1}. ${s}`).join('\n')}
 
 ARTICLE TO FINALIZE:
 ${humanizedArticle.slice(0, 9000)}
 
 FAQ TO INSERT (add as "## Frequently Asked Questions" section before the conclusion):
-${seoPackage.faq.map((f, i) => `**${i + 1}. ${f.question}**\n\n${f.answer}`).join('\n\n')}
+${(seoPackage.faq ?? []).map((f, i) => `**${i + 1}. ${f.question}**\n\n${f.answer}`).join('\n\n')}
 
 Instructions:
 1. Apply the quality suggestions above (lightly — don't over-edit)

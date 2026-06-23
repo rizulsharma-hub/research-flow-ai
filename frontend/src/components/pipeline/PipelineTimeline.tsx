@@ -5,7 +5,11 @@ import { StageCard } from './StageCard';
 import { PIPELINE_STAGES } from '@/lib/constants';
 import { motion } from 'framer-motion';
 
-export function PipelineTimeline() {
+interface Props {
+  onRetry?: () => void;
+}
+
+export function PipelineTimeline({ onRetry }: Props) {
   const stageStates = useArticleStore((s) => s.stageStates);
 
   const completed = Object.values(stageStates).filter((s) => s.status === 'COMPLETED').length;
@@ -49,6 +53,7 @@ export function PipelineTimeline() {
             stage={state}
             index={index}
             isLast={index === PIPELINE_STAGES.length - 1}
+            onRetry={state.status === 'FAILED' ? onRetry : undefined}
           />
         );
       })}

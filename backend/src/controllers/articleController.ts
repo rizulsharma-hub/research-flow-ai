@@ -168,18 +168,19 @@ export async function retryArticle(req: Request, res: Response, next: NextFuncti
       return;
     }
 
-    if (article.status !== 'FAILED') {
-      next(new AppError(400, 'Only failed articles can be retried'));
+    if (article.status !== 'FAILED' && article.status !== 'RUNNING') {
+      next(new AppError(400, 'Only failed or stuck articles can be retried'));
       return;
     }
 
+    // Keep COMPLETED stages — only reset FAILED/RUNNING ones so the pipeline resumes
     await prisma.$transaction([
       prisma.article.update({
         where: { id },
         data: { status: 'QUEUED', errorMessage: null },
       }),
       prisma.pipelineStage.updateMany({
-        where: { articleId: id, status: 'FAILED' },
+        where: { articleId: id, status: { in: ['FAILED', 'RUNNING'] } },
         data: { status: 'PENDING', error: null, startedAt: null, completedAt: null },
       }),
     ]);

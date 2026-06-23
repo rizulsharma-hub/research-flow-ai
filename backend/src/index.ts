@@ -16,7 +16,19 @@ const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://localhost:3000';
 
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({
-  origin: [FRONTEND_URL, 'http://localhost:3000', 'http://127.0.0.1:3000'],
+  origin: (origin, callback) => {
+    const allowed = [
+      FRONTEND_URL,
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
+    ];
+    // Allow all Vercel preview and production deployments
+    if (!origin || allowed.includes(origin) || /\.vercel\.app$/.test(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS: origin ${origin} not allowed`));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 }));

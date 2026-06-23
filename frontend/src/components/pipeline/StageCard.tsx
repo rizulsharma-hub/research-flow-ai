@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, Circle, Loader2, XCircle, ChevronDown, ChevronUp, Zap } from 'lucide-react';
+import { CheckCircle2, Circle, Loader2, XCircle, ChevronDown, ChevronUp, Zap, RotateCcw } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { streamingStore } from '@/lib/streamingStore';
@@ -35,9 +35,10 @@ interface Props {
   stage: StageState;
   index: number;
   isLast: boolean;
+  onRetry?: () => void;
 }
 
-export function StageCard({ stage, index, isLast }: Props) {
+export function StageCard({ stage, index, isLast, onRetry }: Props) {
   const { status, stageName, messages, result } = stage;
   const isRunning = status === 'RUNNING';
   const isCompleted = status === 'COMPLETED';
@@ -221,9 +222,22 @@ export function StageCard({ stage, index, isLast }: Props) {
             )}
           </AnimatePresence>
 
-          {/* Failed: error */}
-          {status === 'FAILED' && stage.error && (
-            <p className="mt-2 text-xs text-red-400/80 font-mono">{stage.error.slice(0, 200)}</p>
+          {/* Failed: error + retry */}
+          {status === 'FAILED' && (
+            <div className="mt-2 flex items-start justify-between gap-3">
+              {stage.error && (
+                <p className="text-xs text-red-400/80 font-mono flex-1">{stage.error.slice(0, 200)}</p>
+              )}
+              {onRetry && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onRetry(); }}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 hover:border-red-500/40 transition-colors flex-shrink-0"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  Resume
+                </button>
+              )}
+            </div>
           )}
         </div>
       </motion.div>

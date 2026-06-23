@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+.next/
+dist/
+
+# Environment files — never commit secrets
+.env
+.env.local
+.env.*.local
+
+# Claude Code local settings
+.claude/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / Editor
+.DS_Store
+.vscode/
+*.swp
+
+# Prisma
+*.db
+*.db-journal
+
+# Redis / Postgres data volumes (if mounted locally)
+data/
