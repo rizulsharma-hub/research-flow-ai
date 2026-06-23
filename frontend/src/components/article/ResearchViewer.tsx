@@ -1,6 +1,6 @@
 'use client';
 
-import { TrendingUp, BarChart2, Lightbulb, AlertCircle, Target } from 'lucide-react';
+import { TrendingUp, BarChart2, Lightbulb, AlertCircle, Target, Globe, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { ResearchReport, PipelineStage } from '@/lib/api';
@@ -85,6 +85,44 @@ export function ResearchViewer({ report, stages }: Props) {
                 </CardContent>
               </Card>
             )}
+          </div>
+        </section>
+      )}
+
+      {cr && Array.isArray(cr.topRankingPages) && (cr.topRankingPages as unknown[]).length > 0 && (
+        <section>
+          <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+            <Globe className="w-4 h-4 text-blue-400" /> Reference Websites Analyzed
+          </h3>
+          <div className="grid grid-cols-1 gap-2">
+            {(cr.topRankingPages as Array<{ title: string; url: string; strength: string; wordCount: number }>).map((page, i) => (
+              <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-border/30 bg-card/30 hover:bg-card/50 transition-colors group">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500/10 text-blue-400 text-xs font-bold flex items-center justify-center mt-0.5">
+                  {i + 1}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-white/90 truncate">{page.title}</p>
+                  <p className="text-xs text-blue-400/70 truncate mt-0.5">{page.url}</p>
+                  {page.strength && (
+                    <p className="text-xs text-muted-foreground mt-1">{page.strength}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {page.wordCount > 0 && (
+                    <span className="text-[10px] text-muted-foreground/60 tabular-nums">{page.wordCount.toLocaleString()} words</span>
+                  )}
+                  <a
+                    href={page.url.startsWith('http') ? page.url : `https://${page.url}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
       )}
