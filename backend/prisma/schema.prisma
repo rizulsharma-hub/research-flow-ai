@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Article {
+  id                String           @id @default(cuid())
+  topic             String
+  primaryKeyword    String
+  secondaryKeywords String[]
+  targetAudience    String
+  country           String
+  contentType       String
+  wordCount         Int
+  status            ArticleStatus    @default(QUEUED)
+  jobId             String?
+  errorMessage      String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  stages            PipelineStage[]
+  researchReport    ResearchReport?
+  generatedArticle  GeneratedArticle?
+  seoPackage        SeoPackage?
+  qualityReport     QualityReport?
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum ArticleStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+model PipelineStage {
+  id          String      @id @default(cuid())
+  articleId   String
+  stageName   String
+  stageIndex  Int
+  status      StageStatus @default(PENDING)
+  result      Json?
+  error       String?
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime    @default(now())
+
+  article     Article     @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, stageName])
+  @@index([articleId])
+}
+
+enum StageStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+model ResearchReport {
+  id          String   @id @default(cuid())
+  articleId   String   @unique
+  content     Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  article     Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+}
+
+model GeneratedArticle {
+  id          String   @id @default(cuid())
+  articleId   String   @unique
+  outline     Json?
+  draft       String?  @db.Text
+  humanized   String?  @db.Text
+  final       String?  @db.Text
+  wordCount   Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  article     Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+}
+
+model SeoPackage {
+  id              String   @id @default(cuid())
+  articleId       String   @unique
+  metaTitle       String?
+  metaDescription String?
+  faq             Json?
+  schema          Json?
+  internalLinks   Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  article         Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+}
+
+model QualityReport {
+  id            String   @id @default(cuid())
+  articleId     String   @unique
+  readability   Float?
+  seoScore      Float?
+  coverage      Float?
+  humanLikeness Float?
+  overall       Float?
+  feedback      Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  article       Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+}
+
+model Settings {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
