@@ -42,6 +42,18 @@ export function useRetryArticle() {
   });
 }
 
+export function useRetryFromStage() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, stageName }: { id: string; stageName: string }) =>
+      api.articles.retryFromStage(id, stageName),
+    onSuccess: (_data, { id }) => {
+      qc.invalidateQueries({ queryKey: ['article', id] });
+      qc.invalidateQueries({ queryKey: ['articles'] });
+    },
+  });
+}
+
 export function useDeleteArticle() {
   const qc = useQueryClient();
   return useMutation({

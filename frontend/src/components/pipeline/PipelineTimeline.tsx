@@ -7,9 +7,10 @@ import { motion } from 'framer-motion';
 
 interface Props {
   onRetry?: () => void;
+  onRetryStage?: (stageName: string) => void;
 }
 
-export function PipelineTimeline({ onRetry }: Props) {
+export function PipelineTimeline({ onRetry, onRetryStage }: Props) {
   const stageStates = useArticleStore((s) => s.stageStates);
 
   const completed = Object.values(stageStates).filter((s) => s.status === 'COMPLETED').length;
@@ -54,6 +55,7 @@ export function PipelineTimeline({ onRetry }: Props) {
             index={index}
             isLast={index === PIPELINE_STAGES.length - 1}
             onRetry={state.status === 'FAILED' ? onRetry : undefined}
+            onRetryStage={state.status === 'COMPLETED' ? () => onRetryStage?.(stage.name) : undefined}
           />
         );
       })}

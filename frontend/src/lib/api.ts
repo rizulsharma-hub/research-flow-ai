@@ -78,6 +78,7 @@ export interface CreateArticleInput {
   country: string;
   contentType: string;
   wordCount: number;
+  referenceUrls?: string[];
 }
 
 export interface PaginatedResponse<T> {
@@ -114,6 +115,12 @@ export const api = {
 
     retry: (id: string) =>
       request<{ message: string }>(`/api/articles/${id}/retry`, { method: 'POST' }),
+
+    retryFromStage: (id: string, stageName: string) =>
+      request<{ message: string }>(`/api/articles/${id}/retry-stage`, {
+        method: 'POST',
+        body: JSON.stringify({ stageName }),
+      }),
 
     delete: (id: string) =>
       request<{ message: string }>(`/api/articles/${id}`, { method: 'DELETE' }),

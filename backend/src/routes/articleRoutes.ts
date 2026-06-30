@@ -5,6 +5,7 @@ import {
   getArticle,
   streamArticleEvents,
   retryArticle,
+  retryFromStage,
   deleteArticle,
 } from '../controllers/articleController.js';
 
@@ -15,6 +16,7 @@ router.get('/', listArticles);
 router.get('/:id', getArticle);
 router.get('/:id/events', streamArticleEvents);
 router.post('/:id/retry', retryArticle);
+router.post('/:id/retry-stage', retryFromStage);
 router.delete('/:id', deleteArticle);
 
 export default router;

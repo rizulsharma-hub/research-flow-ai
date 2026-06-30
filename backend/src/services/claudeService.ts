@@ -113,11 +113,33 @@ function parseJSON<T>(text: string): T {
 
 /** Closes unclosed brackets/braces so truncated JSON from token limits can be parsed */
 function autoClose(s: string): string {
-  const stack: string[] = [];
+  // First pass: find the last position where we were NOT mid-string,
+  // so we can trim back if the input was cut off inside a string literal.
   let inString = false;
   let escape = false;
+  let lastSafePos = 0;
 
-  for (const ch of s) {
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    if (escape) { escape = false; continue; }
+    if (ch === '\\' && inString) { escape = true; continue; }
+    if (ch === '"') {
+      inString = !inString;
+      if (!inString) lastSafePos = i + 1; // just closed a string
+      continue;
+    }
+    if (!inString) lastSafePos = i + 1;
+  }
+
+  // If truncated mid-string, trim back to last safe boundary
+  const trimmed = inString ? s.slice(0, lastSafePos) : s;
+
+  // Second pass: compute open bracket stack on the (possibly trimmed) input
+  const stack: string[] = [];
+  inString = false;
+  escape = false;
+
+  for (const ch of trimmed) {
     if (escape) { escape = false; continue; }
     if (ch === '\\' && inString) { escape = true; continue; }
     if (ch === '"') { inString = !inString; continue; }
@@ -128,7 +150,7 @@ function autoClose(s: string): string {
   }
 
   // Drop any trailing comma before we close
-  let result = s.trimEnd().replace(/,\s*$/, '');
+  let result = trimmed.trimEnd().replace(/,\s*$/, '');
   // Close everything in reverse order
   while (stack.length) result += stack.pop();
   return result;
@@ -371,7 +393,9 @@ Expert quotes:
 "${researchReport.expertInsights[0]?.insight}" — ${researchReport.expertInsights[0]?.attribution}
 "${researchReport.expertInsights[1]?.insight}" — ${researchReport.expertInsights[1]?.attribution}
 
-RULES:
+${data.referenceUrls?.length ? `\nREFERENCE LINKS TO INCLUDE:
+${data.referenceUrls.map((u) => `- ${u}`).join('\n')}
+Naturally hyperlink these URLs as markdown links within the article text where contextually relevant.\n` : ''}RULES:
 - Start with a hook (surprising fact, bold claim, vivid scenario) — never "In today's..."
 - Each H2 section minimum 150 words
 - Address reader as "you"

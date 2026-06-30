@@ -40,6 +40,7 @@ export interface ArticleJobData {
   country: string;
   contentType: string;
   wordCount: number;
+  referenceUrls?: string[];
 }
 
 export const PIPELINE_STAGES: { name: StageName; label: string; index: number }[] = [

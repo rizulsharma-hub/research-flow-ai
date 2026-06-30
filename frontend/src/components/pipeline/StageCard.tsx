@@ -36,9 +36,10 @@ interface Props {
   index: number;
   isLast: boolean;
   onRetry?: () => void;
+  onRetryStage?: () => void;
 }
 
-export function StageCard({ stage, index, isLast, onRetry }: Props) {
+export function StageCard({ stage, index, isLast, onRetry, onRetryStage }: Props) {
   const { status, stageName, messages, result } = stage;
   const isRunning = status === 'RUNNING';
   const isCompleted = status === 'COMPLETED';
@@ -116,7 +117,7 @@ export function StageCard({ stage, index, isLast, onRetry }: Props) {
       >
         <div
           className={cn(
-            'rounded-xl border transition-all duration-300',
+            'group rounded-xl border transition-all duration-300',
             status === 'PENDING'   && 'border-border/30 bg-card/20',
             status === 'RUNNING'   && 'border-blue-500/40 bg-blue-500/5 shadow-[0_0_20px_rgba(59,130,246,0.08)]',
             status === 'COMPLETED' && 'border-emerald-500/30 bg-emerald-500/5 cursor-pointer hover:border-emerald-500/50',
@@ -175,7 +176,17 @@ export function StageCard({ stage, index, isLast, onRetry }: Props) {
             </div>
 
             {isCompleted && (
-              <div className="flex-shrink-0 mt-0.5">
+              <div className="flex items-center gap-1.5 flex-shrink-0 mt-0.5">
+                {onRetryStage && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onRetryStage(); }}
+                    title="Re-run from this stage"
+                    className="opacity-0 group-hover:opacity-100 flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-white/5 hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-400 border border-transparent hover:border-emerald-500/20 transition-all"
+                  >
+                    <RotateCcw className="w-2.5 h-2.5" />
+                    Re-run
+                  </button>
+                )}
                 {userExpanded ? <ChevronUp className="w-3.5 h-3.5 text-muted-foreground/50" /> : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground/50" />}
               </div>
             )}

@@ -7,13 +7,14 @@ import { AppError } from '../middleware/errorHandler.js';
 import { PIPELINE_STAGES } from '../types/index.js';
 
 const createArticleSchema = z.object({
-  topic: z.string().min(3).max(500),
+  topic: z.string().min(3).max(2000),
   primaryKeyword: z.string().min(2).max(200),
   secondaryKeywords: z.array(z.string()).max(10).default([]),
   targetAudience: z.string().min(3).max(200),
   country: z.string().min(2).max(100).default('United States'),
   contentType: z.enum(['blog_post', 'guide', 'tutorial', 'review', 'comparison', 'news', 'opinion']),
   wordCount: z.number().int().min(300).max(10000).default(2000),
+  referenceUrls: z.array(z.string().url()).max(5).default([]),
 });
 
 export async function createArticle(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -52,6 +53,7 @@ export async function createArticle(req: Request, res: Response, next: NextFunct
       country: article.country,
       contentType: article.contentType,
       wordCount: article.wordCount,
+      referenceUrls: body.referenceUrls,
     });
 
     res.status(201).json({ data: article });
@@ -197,6 +199,57 @@ export async function retryArticle(req: Request, res: Response, next: NextFuncti
     });
 
     res.json({ data: { message: 'Article queued for retry' } });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function retryFromStage(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const id = String(req.params['id']);
+    const { stageName } = req.body as { stageName: string };
+
+    const stageEntry = PIPELINE_STAGES.find((s) => s.name === stageName);
+    if (!stageEntry) {
+      next(new AppError(400, 'Invalid stage name'));
+      return;
+    }
+
+    const article = await prisma.article.findUnique({ where: { id } });
+
+    if (!article) {
+      next(new AppError(404, 'Article not found'));
+      return;
+    }
+
+    if (article.status === 'RUNNING') {
+      next(new AppError(400, 'Cannot retry while article is running'));
+      return;
+    }
+
+    await prisma.$transaction([
+      prisma.article.update({
+        where: { id },
+        data: { status: 'QUEUED', errorMessage: null },
+      }),
+      prisma.pipelineStage.updateMany({
+        where: { articleId: id, stageIndex: { gte: stageEntry.index } },
+        data: { status: 'PENDING', error: null, startedAt: null, completedAt: null },
+      }),
+    ]);
+
+    await addArticleJob({
+      articleId: article.id,
+      topic: article.topic,
+      primaryKeyword: article.primaryKeyword,
+      secondaryKeywords: article.secondaryKeywords,
+      targetAudience: article.targetAudience,
+      country: article.country,
+      contentType: article.contentType,
+      wordCount: article.wordCount,
+    });
+
+    res.json({ data: { message: `Retrying from stage: ${stageName}` } });
   } catch (err) {
     next(err);
   }

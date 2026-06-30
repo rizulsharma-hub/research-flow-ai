@@ -21,6 +21,7 @@ export function NewArticleForm() {
     topic: '',
     primaryKeyword: '',
     secondaryKeywordsRaw: '',
+    referenceUrlsRaw: '',
     targetAudience: '',
     country: 'United States',
     contentType: 'blog_post',
@@ -46,12 +47,18 @@ export function NewArticleForm() {
       .map((k) => k.trim())
       .filter(Boolean);
 
+    const referenceUrls = form.referenceUrlsRaw
+      .split(/[\n,]/)
+      .map((u) => u.trim())
+      .filter(Boolean);
+
     try {
       reset();
       const article = await mutateAsync({
         topic: form.topic.trim(),
         primaryKeyword: form.primaryKeyword.trim(),
         secondaryKeywords,
+        referenceUrls,
         targetAudience: form.targetAudience.trim() || 'General audience',
         country: form.country,
         contentType: form.contentType,
@@ -76,7 +83,7 @@ export function NewArticleForm() {
             placeholder="e.g. How to build a personal brand as a software engineer in 2025"
             value={form.topic}
             onChange={(e) => set('topic', e.target.value)}
-            rows={2}
+            rows={4}
             required
           />
         </div>
@@ -104,6 +111,20 @@ export function NewArticleForm() {
             placeholder="e.g. developer brand, coding portfolio, tech influencer"
             value={form.secondaryKeywordsRaw}
             onChange={(e) => set('secondaryKeywordsRaw', e.target.value)}
+          />
+        </div>
+
+        <div className="md:col-span-2 space-y-2">
+          <Label htmlFor="referenceUrls">
+            Reference URLs
+            <span className="text-muted-foreground text-xs ml-2">(one per line or comma-separated, max 5)</span>
+          </Label>
+          <Textarea
+            id="referenceUrls"
+            placeholder="https://example.com/source-article&#10;https://nta.ac.in/cuet"
+            value={form.referenceUrlsRaw}
+            onChange={(e) => set('referenceUrlsRaw', e.target.value)}
+            rows={2}
           />
         </div>
 

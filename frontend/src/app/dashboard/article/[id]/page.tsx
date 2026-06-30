@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { PipelineTimeline } from '@/components/pipeline/PipelineTimeline';
 import { LiveLogViewer } from '@/components/pipeline/LiveLogViewer';
 import { ArticleViewer } from '@/components/article/ArticleViewer';
-import { useArticle, useRetryArticle } from '@/hooks/useArticle';
+import { useArticle, useRetryArticle, useRetryFromStage } from '@/hooks/useArticle';
 import { useSSE } from '@/hooks/useSSE';
 import { useArticleStore } from '@/stores/articleStore';
 import { PIPELINE_STAGES } from '@/lib/constants';
@@ -26,6 +26,7 @@ export default function ArticlePage({ params }: PageProps) {
   const { id } = use(params);
   const { data: article, isLoading, error, refetch } = useArticle(id);
   const { mutate: retry, isPending: retrying } = useRetryArticle();
+  const { mutate: retryStage, isPending: retryingStage } = useRetryFromStage();
   const { initStages, reset } = useArticleStore();
   const jobStatus = useArticleStore((s) => s.jobStatus);
 
@@ -97,10 +98,21 @@ export default function ArticlePage({ params }: PageProps) {
               variant="outline"
               size="sm"
               onClick={() => retry(id)}
-              disabled={retrying}
+              disabled={retrying || retryingStage}
             >
               {retrying ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-              Retry
+              Resume
+            </Button>
+          )}
+          {(article.status === 'FAILED' || article.status === 'COMPLETED') && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => retryStage({ id, stageName: 'keyword_analysis' })}
+              disabled={retrying || retryingStage}
+            >
+              {retryingStage ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+              Restart All
             </Button>
           )}
         </div>
@@ -129,7 +141,10 @@ export default function ArticlePage({ params }: PageProps) {
             )}
           </div>
 
-          <PipelineTimeline onRetry={() => retry(id)} />
+          <PipelineTimeline
+            onRetry={() => retry(id)}
+            onRetryStage={(stageName) => retryStage({ id, stageName })}
+          />
           <LiveLogViewer />
         </div>
 
