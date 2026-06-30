@@ -68,9 +68,15 @@ export function startWorker(): void {
 }
 
 export async function addArticleJob(data: ArticleJobData): Promise<string> {
-  const job = await articleQueue.add('generate', data, {
-    jobId: `article-${data.articleId}`,
-  });
+  const jobId = `article-${data.articleId}`;
+
+  // BullMQ deduplicates by jobId — remove any stale job so the new one is always enqueued
+  const stale = await articleQueue.getJob(jobId);
+  if (stale) {
+    await stale.remove().catch(() => {});
+  }
+
+  const job = await articleQueue.add('generate', data, { jobId });
   return job.id ?? data.articleId;
 }
 
